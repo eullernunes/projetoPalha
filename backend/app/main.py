@@ -42,7 +42,7 @@ api_router.include_router(production.router, **protected)
 api_router.include_router(expenses.router, **protected)
 api_router.include_router(dashboard.router, **protected)
 
-app.include_router(api_router)
+api_router.include_router(api_router)
 
 @app.get("/")
 def root():
