@@ -22,7 +22,7 @@ export default function Sidebar() {
           P
         </div>
         <div>
-          <p className="text-white font-semibold text-sm leading-tight">Sistema Palha</p>
+          <p className="text-white font-semibold text-sm leading-tight">Palha LSA</p>
           <p className="text-gray-400 text-xs">Gestão de Produção</p>
         </div>
       </div>
