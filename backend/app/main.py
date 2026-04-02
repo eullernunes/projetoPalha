@@ -12,8 +12,8 @@ models.Base.metadata.create_all(bind=engine)
 api_router = APIRouter(prefix="/api")
 
 app = FastAPI(
-    title="Sistema Palha - API",
-    description="Sistema de gestão para fábrica de palha",
+    title="Palhas LSA",
+    description="Sistema de gestão interno",
     version="1.0.0",
 )
 
@@ -46,7 +46,7 @@ app.include_router(api_router)
 
 @app.get("/")
 def root():
-    return {"message": "Sistema Palha API v1.0"}
+    return {"message": "Sistema Gestão Interno API v1.0"}
 
 
 # ─── Seed: cria usuário admin padrão se o banco estiver vazio ─────────────────

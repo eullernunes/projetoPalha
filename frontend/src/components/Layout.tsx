@@ -84,7 +84,7 @@ export default function Layout() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [changePwOpen, setChangePwOpen] = useState(false)
 
-  const title = titles[location.pathname] ?? 'Sistema Palha'
+  const title = titles[location.pathname] ?? 'Palhas LSA'
 
   return (
     <div className="min-h-screen flex bg-gray-50">

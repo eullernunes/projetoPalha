@@ -42,7 +42,7 @@ export default function Login() {
           <div className="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center">
             <Leaf size={22} className="text-white" />
           </div>
-          <span className="text-white font-bold text-xl">Sistema Palha</span>
+          <span className="text-white font-bold text-xl">Palhas LSA</span>
         </div>
 
         {/* Center copy */}
@@ -82,7 +82,7 @@ export default function Login() {
             <div className="w-9 h-9 bg-primary-500 rounded-xl flex items-center justify-center">
               <Leaf size={18} className="text-white" />
             </div>
-            <span className="text-gray-900 font-bold text-lg">Sistema Palha</span>
+            <span className="text-gray-900 font-bold text-lg">Palhas LSA</span>
           </div>
 
           <div className="mb-8">
