@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard, Users, Briefcase, ClipboardList,
-  Receipt, TrendingUp,
+  Receipt, TrendingUp, ShoppingCart,
 } from 'lucide-react'
 
 const links = [
@@ -9,6 +9,7 @@ const links = [
   { to: '/funcionarios', icon: Users,            label: 'Funcionários' },
   { to: '/funcoes',      icon: Briefcase,        label: 'Funções' },
   { to: '/producao',     icon: ClipboardList,    label: 'Produção' },
+  { to: '/vendas',       icon: ShoppingCart,     label: 'Vendas' },
   { to: '/despesas',     icon: Receipt,          label: 'Despesas' },
   { to: '/relatorios',   icon: TrendingUp,       label: 'Relatórios' },
 ]

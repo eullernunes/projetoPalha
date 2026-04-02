@@ -5,10 +5,11 @@ from typing import List, Optional
 from datetime import date, timedelta
 import calendar
 from app.database import get_db
-from app.models.models import Production, Employee, FixedExpense, VariableExpense, Role
+from app.models.models import Production, Employee, FixedExpense, VariableExpense, Role, Sale
 from app.schemas.schemas import (
     DashboardSummary, ProductionTimePoint,
     EmployeeProductionStat, RoleProductionStat, MonthlyFinancial,
+    SaleOut,
 )
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
@@ -33,7 +34,7 @@ def get_summary(
     ).filter(Production.date >= first_day, Production.date <= last_day).first()
 
     total_production = int(prod_stats[0])
-    total_earnings = float(prod_stats[1])
+    total_labor_cost = float(prod_stats[1])
 
     total_fixed = db.query(func.coalesce(func.sum(FixedExpense.amount), 0.0)).filter(
         FixedExpense.month == m, FixedExpense.year == y
@@ -43,17 +44,22 @@ def get_summary(
         VariableExpense.date >= first_day, VariableExpense.date <= last_day
     ).scalar() or 0.0
 
+    total_revenue = db.query(func.coalesce(func.sum(Sale.total), 0.0)).filter(
+        Sale.date >= first_day, Sale.date <= last_day
+    ).scalar() or 0.0
+
     active_employees = db.query(func.count(Employee.id)).filter(Employee.active == True).scalar() or 0
 
-    total_expenses = float(total_fixed) + float(total_variable)
+    total_expenses = total_labor_cost + float(total_fixed) + float(total_variable)
 
     return DashboardSummary(
         total_production=total_production,
-        total_earnings=total_earnings,
+        total_labor_cost=total_labor_cost,
         total_fixed_expenses=float(total_fixed),
         total_variable_expenses=float(total_variable),
         total_expenses=total_expenses,
-        net_result=total_earnings - total_expenses,
+        total_revenue=float(total_revenue),
+        net_result=float(total_revenue) - total_expenses,
         active_employees=active_employees,
         month=m,
         year=y,
@@ -168,7 +174,11 @@ def monthly_financial(
         first_day = date(y, m, 1)
         last_day = date(y, m, calendar.monthrange(y, m)[1])
 
-        earnings = db.query(func.coalesce(func.sum(Production.earnings), 0.0)).filter(
+        revenue = db.query(func.coalesce(func.sum(Sale.total), 0.0)).filter(
+            Sale.date >= first_day, Sale.date <= last_day
+        ).scalar() or 0.0
+
+        labor = db.query(func.coalesce(func.sum(Production.earnings), 0.0)).filter(
             Production.date >= first_day, Production.date <= last_day
         ).scalar() or 0.0
 
@@ -180,16 +190,16 @@ def monthly_financial(
             VariableExpense.date >= first_day, VariableExpense.date <= last_day
         ).scalar() or 0.0
 
-        expenses = float(fixed) + float(variable)
+        expenses = float(labor) + float(fixed) + float(variable)
 
         month_names = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
                        "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
 
         result.append(MonthlyFinancial(
             label=f"{month_names[m - 1]}/{str(y)[2:]}",
-            earnings=float(earnings),
+            earnings=float(revenue),
             expenses=expenses,
-            net=float(earnings) - expenses,
+            net=float(revenue) - expenses,
         ))
 
     return result

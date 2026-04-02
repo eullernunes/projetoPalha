@@ -8,6 +8,7 @@ import Roles from './pages/Roles'
 import Production from './pages/Production'
 import Expenses from './pages/Expenses'
 import Reports from './pages/Reports'
+import Sales from './pages/Sales'
 
 function RequireAuth() {
   const { isAuthenticated } = useAuth()
@@ -25,6 +26,7 @@ function AppRoutes() {
           <Route path="funcoes"       element={<Roles />} />
           <Route path="producao"      element={<Production />} />
           <Route path="despesas"      element={<Expenses />} />
+          <Route path="vendas"        element={<Sales />} />
           <Route path="relatorios"    element={<Reports />} />
         </Route>
       </Route>

@@ -14,7 +14,7 @@ export const authApi = {
 }
 
 import type {
-  Employee, Role, Production, FixedExpense, VariableExpense,
+  Employee, Role, Production, Sale, FixedExpense, VariableExpense,
   DashboardSummary, ProductionTimePoint, EmployeeProductionStat,
   RoleProductionStat, MonthlyFinancial,
 } from '../types'
@@ -84,6 +84,21 @@ export const expensesApi = {
     api.put<VariableExpense>(`/expenses/variable/${id}`, data).then(r => r.data),
   deleteVariable: (id: number) =>
     api.delete(`/expenses/variable/${id}`),
+}
+
+// ─── Sales ────────────────────────────────────────────────────────────────────
+
+export const salesApi = {
+  list: (params?: { start_date?: string; end_date?: string }) =>
+    api.get<Sale[]>('/sales', { params }).then(r => r.data),
+  get: (id: number) =>
+    api.get<Sale>(`/sales/${id}`).then(r => r.data),
+  create: (data: { date: string; quantity: number; price_per_unit: number; notes?: string }) =>
+    api.post<Sale>('/sales', data).then(r => r.data),
+  update: (id: number, data: Partial<Sale>) =>
+    api.put<Sale>(`/sales/${id}`, data).then(r => r.data),
+  delete: (id: number) =>
+    api.delete(`/sales/${id}`),
 }
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────

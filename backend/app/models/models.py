@@ -36,8 +36,8 @@ class Employee(Base):
     active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    productions = relationship("Production", back_populates="employee")
-    variable_expenses = relationship("VariableExpense", back_populates="employee")
+    productions = relationship("Production", back_populates="employee", cascade="all, delete-orphan")
+    variable_expenses = relationship("VariableExpense", back_populates="employee", cascade="all, delete-orphan")
 
 
 class Production(Base):
@@ -54,6 +54,18 @@ class Production(Base):
 
     employee = relationship("Employee", back_populates="productions")
     role = relationship("Role", back_populates="productions")
+
+
+class Sale(Base):
+    __tablename__ = "sales"
+
+    id = Column(Integer, primary_key=True, index=True)
+    date = Column(Date, nullable=False)
+    quantity = Column(Integer, nullable=False)
+    price_per_unit = Column(Float, nullable=False)
+    total = Column(Float, nullable=False)
+    notes = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
 class FixedExpense(Base):

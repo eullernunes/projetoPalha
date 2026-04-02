@@ -98,6 +98,33 @@ class ProductionOut(ProductionBase):
     role: RoleBrief
 
 
+# ─── Sale ─────────────────────────────────────────────────────────────────────
+
+class SaleBase(BaseModel):
+    date: date
+    quantity: int
+    price_per_unit: float
+    notes: Optional[str] = None
+
+
+class SaleCreate(SaleBase):
+    pass
+
+
+class SaleUpdate(BaseModel):
+    date: Optional[date] = None
+    quantity: Optional[int] = None
+    price_per_unit: Optional[float] = None
+    notes: Optional[str] = None
+
+
+class SaleOut(SaleBase):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    total: float
+    created_at: datetime
+
+
 # ─── Fixed Expense ────────────────────────────────────────────────────────────
 
 class FixedExpenseBase(BaseModel):
@@ -157,10 +184,11 @@ class VariableExpenseOut(VariableExpenseBase):
 
 class DashboardSummary(BaseModel):
     total_production: int
-    total_earnings: float
+    total_labor_cost: float
     total_fixed_expenses: float
     total_variable_expenses: float
     total_expenses: float
+    total_revenue: float
     net_result: float
     active_employees: int
     month: int

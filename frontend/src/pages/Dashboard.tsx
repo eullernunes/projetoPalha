@@ -131,7 +131,7 @@ export default function Dashboard() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <KPICard
           title="Produção Total"
           value={fmtNum(summary?.total_production ?? 0)}
@@ -141,12 +141,20 @@ export default function Dashboard() {
           trend="up"
         />
         <KPICard
-          title="Ganhos Totais"
-          value={fmt(summary?.total_earnings ?? 0)}
-          subtitle="mão de obra"
+          title="Receita de Vendas"
+          value={fmt(summary?.total_revenue ?? 0)}
+          subtitle="produtos vendidos"
           icon={TrendingUp}
-          color="bg-blue-500"
+          color="bg-green-600"
           trend="up"
+        />
+        <KPICard
+          title="Custo Mão de Obra"
+          value={fmt(summary?.total_labor_cost ?? 0)}
+          subtitle="pagamento funcionários"
+          icon={TrendingDown}
+          color="bg-orange-500"
+          trend="down"
         />
         <KPICard
           title="Total Despesas"
@@ -176,7 +184,7 @@ export default function Dashboard() {
           </span>
         </div>
         <span className="ml-auto text-xs text-gray-400">
-          Ganhos − Despesas Fixas − Despesas Variáveis
+          Receita − Mão de Obra − Despesas Fixas − Despesas Variáveis
         </span>
       </div>
 
@@ -220,7 +228,7 @@ export default function Dashboard() {
 
         {/* Monthly Financial */}
         <div className="card p-6">
-          <h3 className="text-base font-semibold text-gray-900 mb-4">Ganhos vs Despesas (6 Meses)</h3>
+          <h3 className="text-base font-semibold text-gray-900 mb-4">Receita vs Despesas (6 Meses)</h3>
           {monthly.length === 0 ? (
             <div className="flex items-center justify-center h-48 text-gray-400 text-sm">
               Nenhum dado financeiro disponível.
@@ -236,7 +244,7 @@ export default function Dashboard() {
                   labelFormatter={l => `Mês: ${l}`}
                 />
                 <Legend />
-                <Bar dataKey="earnings" name="Ganhos" fill="#16a34a" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="earnings" name="Receita" fill="#16a34a" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="expenses" name="Despesas" fill="#f87171" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>

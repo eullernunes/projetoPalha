@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, SessionLocal
 from app.models import models
 from app.auth import get_current_user, hash_password
-from app.routers import employees, roles, production, expenses, dashboard, auth
+from app.routers import employees, roles, production, expenses, dashboard, auth, sales
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -41,6 +41,7 @@ api_router.include_router(roles.router, **protected)
 api_router.include_router(production.router, **protected)
 api_router.include_router(expenses.router, **protected)
 api_router.include_router(dashboard.router, **protected)
+api_router.include_router(sales.router, **protected)
 
 app.include_router(api_router)
 

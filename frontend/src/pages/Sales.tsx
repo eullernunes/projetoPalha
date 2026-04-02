@@ -1,7 +1,7 @@
-import { useEffect, useState, useMemo } from 'react'
-import { Plus, Pencil, Trash2, ClipboardList, Filter } from 'lucide-react'
-import { productionApi, employeesApi, rolesApi } from '../api'
-import type { Production, Employee, Role } from '../types'
+import { useEffect, useState } from 'react'
+import { Plus, Pencil, Trash2, ShoppingCart, Filter } from 'lucide-react'
+import { salesApi } from '../api'
+import type { Sale } from '../types'
 import Modal from '../components/ui/Modal'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import EmptyState from '../components/ui/EmptyState'
@@ -18,26 +18,19 @@ function fmtDate(d: string) {
   return `${day}/${m}/${y}`
 }
 
-export default function ProductionPage() {
-  const [records, setRecords] = useState<Production[]>([])
-  const [employees, setEmployees] = useState<Employee[]>([])
-  const [roles, setRoles] = useState<Role[]>([])
+export default function SalesPage() {
+  const [records, setRecords] = useState<Sale[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Filters
-  const [filterEmployee, setFilterEmployee] = useState('')
-  const [filterRole, setFilterRole] = useState('')
   const [filterStart, setFilterStart] = useState('')
   const [filterEnd, setFilterEnd] = useState('')
 
-  // Form
   const [modalOpen, setModalOpen] = useState(false)
-  const [editing, setEditing] = useState<Production | null>(null)
+  const [editing, setEditing] = useState<Sale | null>(null)
   const [form, setForm] = useState({
-    employee_id: '',
-    role_id: '',
     date: today,
     quantity: '',
+    price_per_unit: '',
     notes: '',
   })
   const [saving, setSaving] = useState(false)
@@ -48,32 +41,21 @@ export default function ProductionPage() {
 
   const loadRecords = (params?: object) => {
     setLoading(true)
-    productionApi.list(params as any).then(setRecords).finally(() => setLoading(false))
+    salesApi.list(params as any).then(setRecords).finally(() => setLoading(false))
   }
 
   useEffect(() => {
-    Promise.all([
-      employeesApi.list(),
-      rolesApi.list(),
-    ]).then(([emps, rls]) => {
-      setEmployees(emps)
-      setRoles(rls)
-    })
     loadRecords()
   }, [])
 
   const handleFilter = () => {
     loadRecords({
-      employee_id: filterEmployee || undefined,
-      role_id: filterRole || undefined,
       start_date: filterStart || undefined,
       end_date: filterEnd || undefined,
     })
   }
 
   const clearFilters = () => {
-    setFilterEmployee('')
-    setFilterRole('')
     setFilterStart('')
     setFilterEnd('')
     loadRecords()
@@ -81,56 +63,50 @@ export default function ProductionPage() {
 
   const openCreate = () => {
     setEditing(null)
-    setForm({ employee_id: '', role_id: '', date: today, quantity: '', notes: '' })
+    setForm({ date: today, quantity: '', price_per_unit: '', notes: '' })
     setError('')
     setModalOpen(true)
   }
 
-  const openEdit = (rec: Production) => {
+  const openEdit = (rec: Sale) => {
     setEditing(rec)
     setForm({
-      employee_id: String(rec.employee_id),
-      role_id: String(rec.role_id),
       date: rec.date,
       quantity: String(rec.quantity),
+      price_per_unit: String(rec.price_per_unit),
       notes: rec.notes ?? '',
     })
     setError('')
     setModalOpen(true)
   }
 
-  const selectedRole = useMemo(
-    () => roles.find(r => r.id === parseInt(form.role_id)),
-    [form.role_id, roles]
-  )
-
-  const previewEarnings = useMemo(() => {
+  const previewTotal = (() => {
     const qty = parseInt(form.quantity)
-    if (!selectedRole || isNaN(qty) || qty <= 0) return null
-    return qty * selectedRole.value_per_unit
-  }, [form.quantity, selectedRole])
+    const price = parseFloat(form.price_per_unit)
+    if (isNaN(qty) || qty <= 0 || isNaN(price) || price <= 0) return null
+    return qty * price
+  })()
 
   const handleSave = async () => {
-    if (!form.employee_id) { setError('Selecione um funcionário.'); return }
-    if (!form.role_id) { setError('Selecione uma função.'); return }
     if (!form.date) { setError('Data é obrigatória.'); return }
     const qty = parseInt(form.quantity)
     if (isNaN(qty) || qty <= 0) { setError('Quantidade deve ser maior que zero.'); return }
+    const price = parseFloat(form.price_per_unit)
+    if (isNaN(price) || price <= 0) { setError('Valor por unidade deve ser maior que zero.'); return }
 
     setSaving(true)
     setError('')
     try {
       const payload = {
-        employee_id: parseInt(form.employee_id),
-        role_id: parseInt(form.role_id),
         date: form.date,
         quantity: qty,
+        price_per_unit: price,
         notes: form.notes.trim() || undefined,
       }
       if (editing) {
-        await productionApi.update(editing.id, payload)
+        await salesApi.update(editing.id, payload)
       } else {
-        await productionApi.create(payload)
+        await salesApi.create(payload)
       }
       setModalOpen(false)
       handleFilter()
@@ -145,7 +121,7 @@ export default function ProductionPage() {
     if (!deleteId) return
     setDeleting(true)
     try {
-      await productionApi.delete(deleteId)
+      await salesApi.delete(deleteId)
       setDeleteId(null)
       handleFilter()
     } finally {
@@ -154,7 +130,7 @@ export default function ProductionPage() {
   }
 
   const totalQty = records.reduce((s, r) => s + r.quantity, 0)
-  const totalEarnings = records.reduce((s, r) => s + r.earnings, 0)
+  const totalRevenue = records.reduce((s, r) => s + r.total, 0)
 
   return (
     <div className="space-y-5">
@@ -164,23 +140,7 @@ export default function ProductionPage() {
           <Filter size={16} className="text-gray-400" />
           <span className="text-sm font-medium text-gray-700">Filtros</span>
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <select
-            className="input text-sm"
-            value={filterEmployee}
-            onChange={e => setFilterEmployee(e.target.value)}
-          >
-            <option value="">Todos os funcionários</option>
-            {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-          </select>
-          <select
-            className="input text-sm"
-            value={filterRole}
-            onChange={e => setFilterRole(e.target.value)}
-          >
-            <option value="">Todas as funções</option>
-            {roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-          </select>
+        <div className="grid grid-cols-2 gap-3">
           <input
             type="date"
             className="input text-sm"
@@ -201,7 +161,7 @@ export default function ProductionPage() {
           <button className="btn-secondary text-sm py-1.5" onClick={clearFilters}>Limpar</button>
           <div className="ml-auto flex items-center gap-4 text-sm text-gray-500">
             <span>{records.length} registro(s)</span>
-            <span className="font-medium text-red-600">Custo Total: {fmt(totalEarnings)}</span>
+            <span className="font-medium text-green-700">Receita Total: {fmt(totalRevenue)}</span>
             <span className="font-medium text-gray-700">{new Intl.NumberFormat('pt-BR').format(totalQty)} unidades</span>
           </div>
         </div>
@@ -210,7 +170,7 @@ export default function ProductionPage() {
       {/* Action Bar */}
       <div className="flex justify-end">
         <button className="btn-primary" onClick={openCreate}>
-          <Plus size={16} /> Registrar Produção
+          <Plus size={16} /> Registrar Venda
         </button>
       </div>
 
@@ -220,21 +180,20 @@ export default function ProductionPage() {
           <div className="flex justify-center py-12"><Spinner /></div>
         ) : records.length === 0 ? (
           <EmptyState
-            icon={ClipboardList}
-            title="Nenhum registro encontrado"
-            description="Registre a produção diária dos funcionários."
-            action={<button className="btn-primary" onClick={openCreate}><Plus size={16} />Registrar Produção</button>}
+            icon={ShoppingCart}
+            title="Nenhuma venda registrada"
+            description="Registre as vendas dos produtos acabados."
+            action={<button className="btn-primary" onClick={openCreate}><Plus size={16} />Registrar Venda</button>}
           />
         ) : (
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="text-left px-5 py-3 font-medium text-gray-600">Data</th>
-                <th className="text-left px-5 py-3 font-medium text-gray-600">Funcionário</th>
-                <th className="text-left px-5 py-3 font-medium text-gray-600">Função</th>
                 <th className="text-right px-5 py-3 font-medium text-gray-600">Qtd</th>
                 <th className="text-right px-5 py-3 font-medium text-gray-600">Valor/Un</th>
-                <th className="text-right px-5 py-3 font-medium text-gray-600">Custo</th>
+                <th className="text-right px-5 py-3 font-medium text-gray-600">Total</th>
+                <th className="text-left px-5 py-3 font-medium text-gray-600">Observações</th>
                 <th className="text-right px-5 py-3 font-medium text-gray-600">Ações</th>
               </tr>
             </thead>
@@ -242,17 +201,16 @@ export default function ProductionPage() {
               {records.map(rec => (
                 <tr key={rec.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-5 py-3 text-gray-600">{fmtDate(rec.date)}</td>
-                  <td className="px-5 py-3 font-medium text-gray-900">{rec.employee.name}</td>
-                  <td className="px-5 py-3 text-gray-600">{rec.role.name}</td>
                   <td className="px-5 py-3 text-right font-medium">
                     {new Intl.NumberFormat('pt-BR').format(rec.quantity)}
                   </td>
                   <td className="px-5 py-3 text-right text-gray-500">
-                    {fmt(rec.role.value_per_unit)}
+                    {fmt(rec.price_per_unit)}
                   </td>
-                  <td className="px-5 py-3 text-right font-semibold text-red-600">
-                    {fmt(rec.earnings)}
+                  <td className="px-5 py-3 text-right font-semibold text-green-700">
+                    {fmt(rec.total)}
                   </td>
+                  <td className="px-5 py-3 text-gray-500 text-sm">{rec.notes ?? '—'}</td>
                   <td className="px-5 py-3 text-right">
                     <div className="flex items-center justify-end gap-1">
                       <button className="btn-ghost p-1.5" onClick={() => openEdit(rec)}>
@@ -271,13 +229,13 @@ export default function ProductionPage() {
             </tbody>
             <tfoot className="bg-gray-50 border-t-2 border-gray-200">
               <tr>
-                <td colSpan={3} className="px-5 py-3 text-sm font-semibold text-gray-700">Totais</td>
+                <td className="px-5 py-3 text-sm font-semibold text-gray-700">Totais</td>
                 <td className="px-5 py-3 text-right font-bold text-gray-900">
                   {new Intl.NumberFormat('pt-BR').format(totalQty)}
                 </td>
                 <td />
-                <td className="px-5 py-3 text-right font-bold text-red-600">{fmt(totalEarnings)}</td>
-                <td />
+                <td className="px-5 py-3 text-right font-bold text-green-700">{fmt(totalRevenue)}</td>
+                <td colSpan={2} />
               </tr>
             </tfoot>
           </table>
@@ -288,38 +246,9 @@ export default function ProductionPage() {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editing ? 'Editar Registro' : 'Registrar Produção'}
+        title={editing ? 'Editar Venda' : 'Registrar Venda'}
       >
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="label">Funcionário *</label>
-              <select
-                className="input"
-                value={form.employee_id}
-                onChange={e => setForm({ ...form, employee_id: e.target.value })}
-                autoFocus
-              >
-                <option value="">Selecione...</option>
-                {employees.filter(e => e.active).map(e => (
-                  <option key={e.id} value={e.id}>{e.name}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="label">Função *</label>
-              <select
-                className="input"
-                value={form.role_id}
-                onChange={e => setForm({ ...form, role_id: e.target.value })}
-              >
-                <option value="">Selecione...</option>
-                {roles.map(r => (
-                  <option key={r.id} value={r.id}>{r.name}</option>
-                ))}
-              </select>
-            </div>
-          </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="label">Data *</label>
@@ -328,6 +257,7 @@ export default function ProductionPage() {
                 className="input"
                 value={form.date}
                 onChange={e => setForm({ ...form, date: e.target.value })}
+                autoFocus
               />
             </div>
             <div>
@@ -343,17 +273,30 @@ export default function ProductionPage() {
             </div>
           </div>
 
-          {/* Earnings Preview */}
-          {previewEarnings !== null && (
-            <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+          <div>
+            <label className="label">Valor por Unidade (R$) *</label>
+            <input
+              type="number"
+              className="input"
+              min="0.01"
+              step="0.01"
+              placeholder="0,00"
+              value={form.price_per_unit}
+              onChange={e => setForm({ ...form, price_per_unit: e.target.value })}
+            />
+          </div>
+
+          {/* Total Preview */}
+          {previewTotal !== null && (
+            <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-red-700">Custo calculado:</span>
-                <span className="text-xl font-bold text-red-700">
-                  {fmt(previewEarnings)}
+                <span className="text-sm text-green-700">Total da venda:</span>
+                <span className="text-xl font-bold text-green-700">
+                  {fmt(previewTotal)}
                 </span>
               </div>
-              <p className="text-xs text-red-500 mt-1">
-                {form.quantity} un × {selectedRole && fmt(selectedRole.value_per_unit)}/un
+              <p className="text-xs text-green-500 mt-1">
+                {form.quantity} un × {form.price_per_unit ? fmt(parseFloat(form.price_per_unit)) : 'R$ 0,00'}/un
               </p>
             </div>
           )}
@@ -383,7 +326,7 @@ export default function ProductionPage() {
         open={deleteId !== null}
         onClose={() => setDeleteId(null)}
         onConfirm={handleDelete}
-        message="Deseja excluir este registro de produção?"
+        message="Deseja excluir este registro de venda?"
         loading={deleting}
       />
     </div>

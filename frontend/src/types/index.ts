@@ -40,6 +40,16 @@ export interface Production {
   role: RoleBrief
 }
 
+export interface Sale {
+  id: number
+  date: string
+  quantity: number
+  price_per_unit: number
+  total: number
+  notes?: string
+  created_at: string
+}
+
 export interface FixedExpense {
   id: number
   description: string
@@ -62,10 +72,11 @@ export interface VariableExpense {
 
 export interface DashboardSummary {
   total_production: number
-  total_earnings: number
+  total_labor_cost: number
   total_fixed_expenses: number
   total_variable_expenses: number
   total_expenses: number
+  total_revenue: number
   net_result: number
   active_employees: number
   month: number
