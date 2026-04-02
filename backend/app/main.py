@@ -32,7 +32,7 @@ app.add_middleware(
 )
 
 # Rotas públicas (sem autenticação)
-app.include_router(auth.router)
+api_router.include_router(auth.router)
 
 # Todas as demais rotas protegidas por JWT
 protected = {"dependencies": [Depends(get_current_user)]}
