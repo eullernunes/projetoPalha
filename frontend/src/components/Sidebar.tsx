@@ -19,7 +19,6 @@ export default function Sidebar() {
       {/* Brand */}
       <div className="flex items-center gap-3 px-5 py-5 border-b border-gray-700">
         <div className="w-9 h-9 bg-primary-500 rounded-lg flex items-center justify-center text-white font-bold text-lg">
-          P
         </div>
         <div>
           <p className="text-white font-semibold text-sm leading-tight">Palha LSA</p>
