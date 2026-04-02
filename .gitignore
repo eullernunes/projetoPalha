@@ -1,0 +1,17 @@
+# Ambiente
+.env
+backend/.venv/
+backend/palha.db
+backend/*.db
+backend/*.db-shm
+backend/*.db-wal
+backend/__pycache__/
+backend/**/__pycache__/
+backend/**/*.pyc
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Docker
+*.log
