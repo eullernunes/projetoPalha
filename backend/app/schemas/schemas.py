@@ -8,7 +8,6 @@ from datetime import date, datetime
 class RoleBase(BaseModel):
     name: str
     description: Optional[str] = None
-    value_per_unit: float
 
 
 class RoleCreate(RoleBase):
@@ -18,7 +17,6 @@ class RoleCreate(RoleBase):
 class RoleUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
-    value_per_unit: Optional[float] = None
 
 
 class RoleOut(RoleBase):
@@ -67,6 +65,7 @@ class ProductionBase(BaseModel):
     role_id: int
     date: date
     quantity: int
+    value_per_unit: float
     notes: Optional[str] = None
 
 
@@ -79,6 +78,7 @@ class ProductionUpdate(BaseModel):
     role_id: Optional[int] = None
     date: Optional[date] = None
     quantity: Optional[int] = None
+    value_per_unit: Optional[float] = None
     notes: Optional[str] = None
 
 
@@ -86,7 +86,6 @@ class RoleBrief(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
     name: str
-    value_per_unit: float
 
 
 class ProductionOut(ProductionBase):

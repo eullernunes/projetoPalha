@@ -86,6 +86,8 @@ export default function Employees() {
       await employeesApi.delete(deleteId)
       setDeleteId(null)
       load()
+    } catch (e: any) {
+      alert(e.message)
     } finally {
       setDeleting(false)
     }

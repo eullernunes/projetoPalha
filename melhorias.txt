@@ -1,0 +1,38 @@
+Estoque-> data, quantidade de palha, palha estufada, data palha estufada, kg, produção e rendimento
+
+Rendimento = quantidade de produção / quantidade de palha estufada
+
+
+Entrada e saida de palhas
+
+
+
+1- Pegam a palha e colocam no Estoque
+2- Pega e joga na estufa
+3- Cortador
+3.1 Peso da palha depois da estufa (desperdício)
+4- Rasgação
+5- Prensa
+6- Desemplacador
+7- Conferência (padrão)
+8- Embalagem
+9- Venda
+
+Tudo é no kg
+
+Embalagem: 
+Quantidade que embalou na semana por dia
+E meta a ser embalada na semana
+
+Total mandado = meta da semana
+Diário
+cada fardo tem 50 mileira
+
+minimo 26 ouro e 24 tradicional em cada fardo
+
+8 x 26 e 8 x 24. quantidade 
+
+total geral juntando os 2
+falta ainda 
+
+Adicionar campo so para a aba de pagamentos, mudar o nome da variavel em relatório de ganho para pagamento

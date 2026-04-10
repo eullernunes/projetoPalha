@@ -20,7 +20,6 @@ class Role(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True, nullable=False)
     description = Column(String, nullable=True)
-    value_per_unit = Column(Float, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     productions = relationship("Production", back_populates="role")
@@ -48,6 +47,7 @@ class Production(Base):
     role_id = Column(Integer, ForeignKey("roles.id"), nullable=False)
     date = Column(Date, nullable=False)
     quantity = Column(Integer, nullable=False)
+    value_per_unit = Column(Float, nullable=False)
     earnings = Column(Float, nullable=False)
     notes = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

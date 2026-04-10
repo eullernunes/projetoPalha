@@ -3,7 +3,11 @@
     "allow": [
       "Bash(chmod +x:*)",
       "Bash(npm install:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(python migrate_value_per_unit.py)",
+      "Bash(python3 -c ':*)",
+      "Bash(docker compose exec backend python3 -c ':*)",
+      "Bash(docker compose exec:*)"
     ]
   }
 }

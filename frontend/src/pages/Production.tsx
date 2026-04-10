@@ -38,6 +38,7 @@ export default function ProductionPage() {
     role_id: '',
     date: today,
     quantity: '',
+    value_per_unit: '',
     notes: '',
   })
   const [saving, setSaving] = useState(false)
@@ -81,7 +82,7 @@ export default function ProductionPage() {
 
   const openCreate = () => {
     setEditing(null)
-    setForm({ employee_id: '', role_id: '', date: today, quantity: '', notes: '' })
+    setForm({ employee_id: '', role_id: '', date: today, quantity: '', value_per_unit: '', notes: '' })
     setError('')
     setModalOpen(true)
   }
@@ -93,22 +94,19 @@ export default function ProductionPage() {
       role_id: String(rec.role_id),
       date: rec.date,
       quantity: String(rec.quantity),
+      value_per_unit: String(rec.value_per_unit),
       notes: rec.notes ?? '',
     })
     setError('')
     setModalOpen(true)
   }
 
-  const selectedRole = useMemo(
-    () => roles.find(r => r.id === parseInt(form.role_id)),
-    [form.role_id, roles]
-  )
-
   const previewEarnings = useMemo(() => {
     const qty = parseInt(form.quantity)
-    if (!selectedRole || isNaN(qty) || qty <= 0) return null
-    return qty * selectedRole.value_per_unit
-  }, [form.quantity, selectedRole])
+    const val = parseFloat(form.value_per_unit)
+    if (isNaN(qty) || qty <= 0 || isNaN(val) || val <= 0) return null
+    return qty * val
+  }, [form.quantity, form.value_per_unit])
 
   const handleSave = async () => {
     if (!form.employee_id) { setError('Selecione um funcionário.'); return }
@@ -116,6 +114,8 @@ export default function ProductionPage() {
     if (!form.date) { setError('Data é obrigatória.'); return }
     const qty = parseInt(form.quantity)
     if (isNaN(qty) || qty <= 0) { setError('Quantidade deve ser maior que zero.'); return }
+    const val = parseFloat(form.value_per_unit)
+    if (isNaN(val) || val <= 0) { setError('Valor por unidade deve ser maior que zero.'); return }
 
     setSaving(true)
     setError('')
@@ -125,6 +125,7 @@ export default function ProductionPage() {
         role_id: parseInt(form.role_id),
         date: form.date,
         quantity: qty,
+        value_per_unit: val,
         notes: form.notes.trim() || undefined,
       }
       if (editing) {
@@ -248,7 +249,7 @@ export default function ProductionPage() {
                     {new Intl.NumberFormat('pt-BR').format(rec.quantity)}
                   </td>
                   <td className="px-5 py-3 text-right text-gray-500">
-                    {fmt(rec.role.value_per_unit)}
+                    {fmt(rec.value_per_unit)}
                   </td>
                   <td className="px-5 py-3 text-right font-semibold text-red-600">
                     {fmt(rec.earnings)}
@@ -342,6 +343,18 @@ export default function ProductionPage() {
               />
             </div>
           </div>
+          <div>
+            <label className="label">Valor por Unidade (R$) *</label>
+            <input
+              type="number"
+              className="input"
+              step="0.01"
+              min="0"
+              placeholder="0,00"
+              value={form.value_per_unit}
+              onChange={e => setForm({ ...form, value_per_unit: e.target.value })}
+            />
+          </div>
 
           {/* Earnings Preview */}
           {previewEarnings !== null && (
@@ -353,7 +366,7 @@ export default function ProductionPage() {
                 </span>
               </div>
               <p className="text-xs text-red-500 mt-1">
-                {form.quantity} un × {selectedRole && fmt(selectedRole.value_per_unit)}/un
+                {form.quantity} un × {fmt(parseFloat(form.value_per_unit))}/un
               </p>
             </div>
           )}

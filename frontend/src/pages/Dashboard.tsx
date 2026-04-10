@@ -19,7 +19,20 @@ const MONTH_NAMES = [
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
 ]
 
-const PIE_COLORS = ['#16a34a', '#22c55e', '#4ade80', '#86efac', '#bbf7d0', '#dcfce7']
+// Paleta principal — cada série tem cor distinta e semântica
+const C = {
+  indigo:  '#6366f1',  // produção / unidades
+  emerald: '#10b981',  // receita / ganhos
+  rose:    '#f43f5e',  // despesas / custos
+  amber:   '#f59e0b',  // resultado / equilíbrio
+  sky:     '#0ea5e9',  // série secundária
+  violet:  '#a855f7',  // destaque adicional
+}
+
+// Cores do pie chart — diversas e contrastantes
+const PIE_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#0ea5e9', '#f43f5e', '#a855f7', '#14b8a6', '#f97316']
+
+const GRID = '#e5e7eb'
 
 function fmt(value: number) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
@@ -200,26 +213,27 @@ export default function Dashboard() {
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <LineChart data={timeSeries}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
                 <XAxis
                   dataKey="date"
-                  tick={{ fontSize: 11 }}
+                  tick={{ fontSize: 11, fill: '#6b7280' }}
+                  axisLine={false} tickLine={false}
                   tickFormatter={v => {
                     const d = new Date(v + 'T00:00:00')
                     return `${d.getDate()}/${d.getMonth() + 1}`
                   }}
                 />
-                <YAxis tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} width={40} />
                 <Tooltip content={<CustomTooltip />} />
-                <Legend />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
                 <Line
                   type="monotone"
                   dataKey="quantity"
                   name="Unidades"
-                  stroke="#16a34a"
-                  strokeWidth={2}
+                  stroke={C.indigo}
+                  strokeWidth={2.5}
                   dot={false}
-                  activeDot={{ r: 4 }}
+                  activeDot={{ r: 5, fill: C.indigo }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -235,17 +249,19 @@ export default function Dashboard() {
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={monthly}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `R$${(v / 1000).toFixed(0)}k`} />
+              <BarChart data={monthly} barCategoryGap="35%" barGap={4}>
+                <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
+                <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} width={52} tickFormatter={v => `R$${(v / 1000).toFixed(0)}k`} />
                 <Tooltip
-                  formatter={(value: number) => fmt(value)}
+                  contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12 }}
+                  formatter={(value: number) => [fmt(value)]}
                   labelFormatter={l => `Mês: ${l}`}
+                  cursor={{ fill: '#f3f4f6' }}
                 />
-                <Legend />
-                <Bar dataKey="earnings" name="Receita" fill="#16a34a" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="expenses" name="Despesas" fill="#f87171" radius={[4, 4, 0, 0]} />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Bar dataKey="earnings" name="Receita" fill={C.emerald} radius={[6, 6, 0, 0]} />
+                <Bar dataKey="expenses" name="Despesas" fill={C.rose} radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -263,12 +279,16 @@ export default function Dashboard() {
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={byEmployee} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis type="number" tick={{ fontSize: 11 }} />
-                <YAxis type="category" dataKey="employee_name" tick={{ fontSize: 11 }} width={90} />
-                <Tooltip formatter={(v: number) => [fmtNum(v), 'Unidades']} />
-                <Bar dataKey="quantity" name="Unidades" fill="#22c55e" radius={[0, 4, 4, 0]} />
+              <BarChart data={byEmployee} layout="vertical" barCategoryGap="30%">
+                <CartesianGrid strokeDasharray="3 3" stroke={GRID} horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="employee_name" tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} width={90} />
+                <Tooltip
+                  contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12 }}
+                  formatter={(v: number) => [fmtNum(v), 'Unidades']}
+                  cursor={{ fill: '#f3f4f6' }}
+                />
+                <Bar dataKey="quantity" name="Unidades" fill={C.indigo} radius={[0, 6, 6, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -291,15 +311,20 @@ export default function Dashboard() {
                     nameKey="role_name"
                     cx="50%"
                     cy="50%"
+                    innerRadius={40}
                     outerRadius={80}
+                    paddingAngle={3}
                     label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
                     labelLine={false}
                   >
                     {byRole.map((_, index) => (
-                      <Cell key={index} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                      <Cell key={index} fill={PIE_COLORS[index % PIE_COLORS.length]} stroke="white" strokeWidth={2} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(v: number) => [fmtNum(v), 'Unidades']} />
+                  <Tooltip
+                    contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12 }}
+                    formatter={(v: number) => [fmtNum(v), 'Unidades']}
+                  />
                 </PieChart>
               </ResponsiveContainer>
               <div className="flex-1 space-y-2">

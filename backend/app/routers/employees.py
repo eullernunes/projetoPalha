@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from app.database import get_db
-from app.models.models import Employee
+from app.models.models import Employee, Production, VariableExpense
 from app.schemas.schemas import EmployeeCreate, EmployeeUpdate, EmployeeOut
 
 router = APIRouter(prefix="/employees", tags=["Funcionários"])
@@ -50,5 +50,7 @@ def delete_employee(employee_id: int, db: Session = Depends(get_db)):
     employee = db.query(Employee).filter(Employee.id == employee_id).first()
     if not employee:
         raise HTTPException(status_code=404, detail="Funcionário não encontrado")
+    db.query(Production).filter(Production.employee_id == employee_id).delete(synchronize_session=False)
+    db.query(VariableExpense).filter(VariableExpense.employee_id == employee_id).delete(synchronize_session=False)
     db.delete(employee)
     db.commit()

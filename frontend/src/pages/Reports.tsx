@@ -9,6 +9,17 @@ import Spinner from '../components/ui/Spinner'
 
 const today = new Date()
 
+// Paleta de cores dos gráficos
+const C = {
+  indigo:  '#6366f1',  // unidades produzidas
+  sky:     '#0ea5e9',  // ganhos por função
+  emerald: '#10b981',  // receita / ganhos (tendência)
+  rose:    '#f43f5e',  // despesas
+  amber:   '#f59e0b',  // resultado líquido
+}
+
+const GRID = '#e5e7eb'
+
 function fmt(v: number) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v)
 }
@@ -120,15 +131,17 @@ export default function Reports() {
             <div className="card p-6">
               <h3 className="text-base font-semibold text-gray-900 mb-4">Produção por Funcionário</h3>
               <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={byEmployee}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip formatter={(v: number, name) => [
-                    name === 'earnings' ? fmt(v) : new Intl.NumberFormat('pt-BR').format(v), name
-                  ]} />
-                  <Legend />
-                  <Bar dataKey="quantity" name="Unidades" fill="#16a34a" radius={[4, 4, 0, 0]} />
+                <BarChart data={byEmployee} barCategoryGap="35%">
+                  <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} width={48} />
+                  <Tooltip
+                    cursor={{ fill: '#f3f4f6' }}
+                    contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12 }}
+                    formatter={(v: number) => [new Intl.NumberFormat('pt-BR').format(v), 'Unidades']}
+                  />
+                  <Legend wrapperStyle={{ fontSize: 12 }} />
+                  <Bar dataKey="quantity" name="Unidades" fill={C.indigo} radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
               {/* Table */}
@@ -156,14 +169,20 @@ export default function Reports() {
             <div className="card p-6">
               <h3 className="text-base font-semibold text-gray-900 mb-4">Produção por Função</h3>
               <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={byRole}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="quantity" name="Unidades" fill="#22c55e" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="earnings" name="Ganhos (R$)" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                <BarChart data={byRole} barCategoryGap="35%" barGap={4}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} width={48} />
+                  <Tooltip
+                    cursor={{ fill: '#f3f4f6' }}
+                    contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12 }}
+                    formatter={(v: number, name) => [
+                      name === 'Ganhos (R$)' ? fmt(v) : new Intl.NumberFormat('pt-BR').format(v), name
+                    ]}
+                  />
+                  <Legend wrapperStyle={{ fontSize: 12 }} />
+                  <Bar dataKey="quantity" name="Unidades" fill={C.indigo} radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="earnings" name="Ganhos (R$)" fill={C.sky} radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -175,14 +194,17 @@ export default function Reports() {
               <h3 className="text-base font-semibold text-gray-900 mb-4">Tendência Anual — Ganhos vs Despesas</h3>
               <ResponsiveContainer width="100%" height={260}>
                 <LineChart data={monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `R$${(v / 1000).toFixed(0)}k`} />
-                  <Tooltip formatter={(v: number) => fmt(v)} />
-                  <Legend />
-                  <Line type="monotone" dataKey="earnings" name="Ganhos" stroke="#16a34a" strokeWidth={2} dot />
-                  <Line type="monotone" dataKey="expenses" name="Despesas" stroke="#f87171" strokeWidth={2} dot />
-                  <Line type="monotone" dataKey="net" name="Resultado" stroke="#3b82f6" strokeWidth={2} dot strokeDasharray="4 2" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
+                  <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} width={56} tickFormatter={v => `R$${(v / 1000).toFixed(0)}k`} />
+                  <Tooltip
+                    contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12 }}
+                    formatter={(v: number) => [fmt(v)]}
+                  />
+                  <Legend wrapperStyle={{ fontSize: 12 }} />
+                  <Line type="monotone" dataKey="earnings" name="Ganhos" stroke={C.emerald} strokeWidth={2.5} dot={{ r: 3, fill: C.emerald }} activeDot={{ r: 5 }} />
+                  <Line type="monotone" dataKey="expenses" name="Despesas" stroke={C.rose} strokeWidth={2.5} dot={{ r: 3, fill: C.rose }} activeDot={{ r: 5 }} />
+                  <Line type="monotone" dataKey="net" name="Resultado" stroke={C.amber} strokeWidth={2.5} dot={{ r: 3, fill: C.amber }} activeDot={{ r: 5 }} strokeDasharray="5 3" />
                 </LineChart>
               </ResponsiveContainer>
             </div>

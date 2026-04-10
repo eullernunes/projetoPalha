@@ -37,7 +37,7 @@ def create_production(data: ProductionCreate, db: Session = Depends(get_db)):
     role = db.query(Role).filter(Role.id == data.role_id).first()
     if not role:
         raise HTTPException(status_code=404, detail="Função não encontrada")
-    earnings = data.quantity * role.value_per_unit
+    earnings = data.quantity * data.value_per_unit
     production = Production(**data.model_dump(), earnings=earnings)
     db.add(production)
     db.commit()
@@ -72,8 +72,7 @@ def update_production(production_id: int, data: ProductionUpdate, db: Session = 
         setattr(production, field, value)
 
     # recalculate earnings
-    role = db.query(Role).filter(Role.id == production.role_id).first()
-    production.earnings = production.quantity * role.value_per_unit
+    production.earnings = production.quantity * production.value_per_unit
 
     db.commit()
     return db.query(Production).options(

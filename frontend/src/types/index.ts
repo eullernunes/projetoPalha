@@ -2,7 +2,6 @@ export interface Role {
   id: number
   name: string
   description?: string
-  value_per_unit: number
   created_at: string
 }
 
@@ -24,7 +23,6 @@ export interface EmployeeBrief {
 export interface RoleBrief {
   id: number
   name: string
-  value_per_unit: number
 }
 
 export interface Production {
@@ -33,6 +31,7 @@ export interface Production {
   role_id: number
   date: string
   quantity: number
+  value_per_unit: number
   earnings: number
   notes?: string
   created_at: string

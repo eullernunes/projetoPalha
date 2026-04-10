@@ -7,11 +7,7 @@ import ConfirmDialog from '../components/ui/ConfirmDialog'
 import EmptyState from '../components/ui/EmptyState'
 import Spinner from '../components/ui/Spinner'
 
-const EMPTY = { name: '', description: '', value_per_unit: '' }
-
-function fmt(v: number) {
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v)
-}
+const EMPTY = { name: '', description: '' }
 
 export default function Roles() {
   const [roles, setRoles] = useState<Role[]>([])
@@ -45,7 +41,6 @@ export default function Roles() {
     setForm({
       name: role.name,
       description: role.description ?? '',
-      value_per_unit: String(role.value_per_unit),
     })
     setError('')
     setModalOpen(true)
@@ -53,8 +48,6 @@ export default function Roles() {
 
   const handleSave = async () => {
     if (!form.name.trim()) { setError('Nome é obrigatório.'); return }
-    const val = parseFloat(form.value_per_unit)
-    if (isNaN(val) || val <= 0) { setError('Valor por unidade deve ser maior que zero.'); return }
 
     setSaving(true)
     setError('')
@@ -62,7 +55,6 @@ export default function Roles() {
       const payload = {
         name: form.name.trim(),
         description: form.description.trim() || undefined,
-        value_per_unit: val,
       }
       if (editing) {
         await rolesApi.update(editing.id, payload)
@@ -138,10 +130,6 @@ export default function Roles() {
                   <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">{role.description}</p>
                 )}
               </div>
-              <div className="mt-auto pt-3 border-t border-gray-100">
-                <p className="text-xs text-gray-500">Valor por unidade</p>
-                <p className="text-lg font-bold text-primary-700">{fmt(role.value_per_unit)}</p>
-              </div>
             </div>
           ))}
         </div>
@@ -173,21 +161,6 @@ export default function Roles() {
               value={form.description}
               onChange={e => setForm({ ...form, description: e.target.value })}
             />
-          </div>
-          <div>
-            <label className="label">Valor por Unidade Produzida (R$) *</label>
-            <input
-              className="input"
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder="0,00"
-              value={form.value_per_unit}
-              onChange={e => setForm({ ...form, value_per_unit: e.target.value })}
-            />
-            <p className="text-xs text-gray-400 mt-1">
-              Valor pago ao funcionário por unidade produzida.
-            </p>
           </div>
           {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
           <div className="flex justify-end gap-3 pt-2">
